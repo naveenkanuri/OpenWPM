@@ -7,6 +7,7 @@
 import ResourceType = browser.webRequest.ResourceType;
 import UploadData = browser.webRequest.UploadData;
 import HttpHeaders = browser.webRequest.HttpHeaders;
+import UrlClassification = browser.webRequest.UrlClassification;
 
 export interface FrameAncestor {
   /** The URL that the document was loaded from. */
@@ -188,4 +189,50 @@ export interface WebRequestOnCompletedEventDetails {
    * that lack a status line) or an empty string if there are no headers.
    */
   statusLine: string;
+}
+
+export interface WebRequestOnHeadersReceivedDetails {
+  /**
+   * The ID of the request. Request IDs are unique within a browser session. As a result, they could be used to relate different events of the same request.
+   */
+  requestId: string;
+  url: string;
+  /** Standard HTTP method. */
+  method: string;
+  /**
+   * The value 0 indicates that the request happens in the main frame; a positive value indicates the ID of a subframe in which the request happens. If the document of a (sub-)frame is loaded (`type` is `main_frame` or `sub_frame`), `frameId` indicates the ID of this frame, not the ID of the outer frame. Frame IDs are unique within a tab.
+   */
+  frameId: number;
+  /** ID of frame that wraps the frame which sent the request. Set to -1 if no parent frame exists. */
+  parentFrameId: number;
+  /** True for private browsing requests. */
+  incognito?: boolean | undefined;
+  /** The cookie store ID of the contextual identity. */
+  cookieStoreId?: string | undefined;
+  /** URL of the resource that triggered this request. */
+  originUrl?: string | undefined;
+  /** URL of the page into which the requested resource will be loaded. */
+  documentUrl?: string | undefined;
+  /** The ID of the tab in which the request takes place. Set to -1 if the request isn't related to a tab. */
+  tabId: number;
+  /** How the requested resource will be used. */
+  type: ResourceType;
+  /** The time when this signal is triggered, in milliseconds since the epoch. */
+  timeStamp: number;
+  /**
+   * HTTP status line of the response or the 'HTTP/0.9 200 OK' string for HTTP/0.9 responses (i.e., responses that lack a status line).
+   */
+  statusLine: string;
+  /**
+   * The server IP address that the request was actually sent to. Note that it may be a literal IPv6 address.
+   */
+  ip?: string;
+  /** The HTTP response headers that have been received with this response. */
+  responseHeaders?: HttpHeaders | undefined;
+  /** Standard HTTP status code returned by the server. */
+  statusCode: number;
+  /** Tracking classification if the request has been classified. */
+  urlClassification?: UrlClassification | undefined;
+  /** Indicates if this request and its content window hierarchy is third party. */
+  thirdParty: boolean;
 }
