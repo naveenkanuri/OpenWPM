@@ -24,7 +24,7 @@ from openwpm.utilities import rediswq
 
 # Configuration via environment variables
 # Crawler specific config
-REDIS_HOST = os.getenv("REDIS_HOST", "redis-box")
+REDIS_HOST = os.getenv("REDIS_HOST", "10.47.55.91")
 REDIS_QUEUE_NAME = os.getenv("REDIS_QUEUE_NAME", "crawl-queue")
 MAX_JOB_RETRIES = int(os.getenv("MAX_JOB_RETRIES", "2"))
 DWELL_TIME = int(os.getenv("DWELL_TIME", "10"))
@@ -32,9 +32,13 @@ TIMEOUT = int(os.getenv("TIMEOUT", "60"))
 
 # Storage Provider Params
 CRAWL_DIRECTORY = os.getenv("CRAWL_DIRECTORY", "crawl-data")
-GCS_BUCKET = os.getenv("GCS_BUCKET", "openwpm-crawls")
-GCP_PROJECT = os.getenv("GCP_PROJECT", "")
-AUTH_TOKEN = os.getenv("GCP_AUTH_TOKEN", "cloud")
+GCS_BUCKET = os.getenv("GCS_BUCKET", "test1-openwpm-bucket")
+GCP_PROJECT = os.getenv("GCP_PROJECT", "level-gizmo-376804")
+AUTH_TOKEN = os.getenv("GCP_AUTH_TOKEN", "/etc/secrets/level-gizmo-376804-87d4e9c8fb8d.json")
+
+print('REDIS_HOST = ' + REDIS_HOST)
+
+print('GCS_BUCKET = ' + GCS_BUCKET + '\nGCP_PROJECT = ' + GCP_PROJECT + '\nAUTH_TOKEN = ' + AUTH_TOKEN + '\n')
 
 # Browser Params
 DISPLAY_MODE = os.getenv("DISPLAY_MODE", "headless")
