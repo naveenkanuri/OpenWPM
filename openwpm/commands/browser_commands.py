@@ -19,6 +19,7 @@ from selenium.webdriver import Firefox
 from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.common.keys import Keys
 
 from ..config import BrowserParams, ManagerParams
 from ..socket_interface import ClientSocket
@@ -35,14 +36,44 @@ from .utils.webdriver_utils import (
 # Constants for bot mitigation
 NUM_MOUSE_MOVES = 10  # Times to randomly move the mouse
 RANDOM_SLEEP_LOW = 1  # low (in sec) for random sleep between page loads
-RANDOM_SLEEP_HIGH = 7  # high (in sec) for random sleep between page loads
+RANDOM_SLEEP_HIGH = 4  # high (in sec) for random sleep between page loads
 logger = logging.getLogger("openwpm")
+
+NUM_MOUSE_MOVES_AFTER_10_SEC = 50
 
 
 def bot_mitigation(webdriver):
     """performs three optional commands for bot-detection
     mitigation when getting a site"""
 
+    start_time = time.time()  # get the start time
+    print(f'start_time = {start_time}')
+    while time.time() < start_time + 10:
+        elapsed_time = time.time() - start_time  # get the elapsed time
+        # print(f'elapsed_time = {elapsed_time}')
+        if elapsed_time > 9:
+            time.sleep(10-elapsed_time)
+        else:
+            # delay b/w mouse random moves is 0 for the first 10sec
+            rand_mouse_moves(webdriver, NUM_MOUSE_MOVES, 0)
+
+    print(f'switch_time = {time.time()-start_time}')
+    action = ActionChains(webdriver)
+    action.context_click()    # add right click
+    action.perform()
+    while time.time() < start_time + 20:
+        elapsed_time = time.time() - start_time  # get the elapsed time
+        # print(f'elapsed_time = {elapsed_time}')
+        if elapsed_time > 19:
+            time.sleep(20-elapsed_time)
+        else:
+            rand_mouse_moves(webdriver, NUM_MOUSE_MOVES_AFTER_10_SEC, 0.1)
+    print(f'end_time = {time.time()-start_time}')
+    action = ActionChains(webdriver)
+    action.context_click()
+    action.perform()      # add right click
+
+def rand_mouse_moves(webdriver, num_mouse_moves, delay_between_moves):
     # bot mitigation 1: move the randomly around a number of times
     window_size = webdriver.get_window_size()
     num_moves = 0
@@ -57,10 +88,13 @@ def bot_mitigation(webdriver):
                 x = random.randint(-move_max, move_max)
                 y = random.randint(-move_max, move_max)
             action = ActionChains(webdriver)
+            # print(f'---------bot mitigation-------- moving to x:{x}, y:{y}')
             action.move_by_offset(x, y)
             action.perform()
             num_moves += 1
+            time.sleep(delay_between_moves)
         except MoveTargetOutOfBoundsException:
+            # print(f'---------bot mitigation-------- failed move to x:{x}, y:{y}')
             num_fails += 1
             pass
 
@@ -68,7 +102,7 @@ def bot_mitigation(webdriver):
     scroll_down(webdriver)
 
     # bot mitigation 3: randomly wait so page visits happen with irregularity
-    time.sleep(random.randrange(RANDOM_SLEEP_LOW, RANDOM_SLEEP_HIGH))
+    # time.sleep(random.randrange(RANDOM_SLEEP_LOW, RANDOM_SLEEP_HIGH))
 
 
 def close_other_windows(webdriver):

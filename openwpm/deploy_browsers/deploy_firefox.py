@@ -1,5 +1,6 @@
 import json
 import logging
+import os
 import os.path
 import tempfile
 from pathlib import Path
@@ -146,6 +147,16 @@ def deploy_firefox(
     # Add extension
     if browser_params.extension_enabled:
 
+        ad_blocker = os.getenv("AD_BLOCKER_EXT", "")
+        if ad_blocker == "ublock-origin":
+            ext_loc = os.path.join(root_dir, "../../Extension/ublock_origin-1.47.0.xpi")
+            ext_loc = os.path.normpath(ext_loc)
+            driver.install_addon(ext_loc, temporary=True)
+            print(
+                "BROWSER %i: ublock-origin Firefox extension loaded" % browser_params.browser_id
+            )
+        else:
+            pass
         # Install extension
         ext_loc = os.path.join(root_dir, "../../Extension/openwpm.xpi")
         ext_loc = os.path.normpath(ext_loc)

@@ -44,6 +44,7 @@ def parse_neterror(error_message):
 def scroll_down(driver):
     at_bottom = False
     while random.random() > 0.20 and not at_bottom:
+        # print(f'scrolling by {10 + int(200 * random.random())}')
         driver.execute_script(
             "window.scrollBy(0,%d)" % (10 + int(200 * random.random()))
         )

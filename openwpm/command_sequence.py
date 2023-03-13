@@ -84,6 +84,7 @@ class CommandSequence:
     def browse(self, num_links=2, sleep=0, timeout=60):
         """browse a website and visit <num_links> links on the page"""
         self.total_timeout += timeout
+        print(f'total_timeout = {self.total_timeout}')
         command = BrowseCommand(self.url, num_links, sleep)
         self._commands_with_timeout.append((command, timeout))
         self.contains_get_or_browse = True
