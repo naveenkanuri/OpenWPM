@@ -115,7 +115,7 @@ with TaskManager(
 
         # Start by visiting the page
         # command_sequence.browse()
-        command_sequence.append_command(BrowseCommand(url=site, num_links=0, sleep=0), timeout=60)
+        command_sequence.append_command(BrowseCommand(url=site, num_links=0, sleep=10), timeout=60)
         # Have a look at custom_command.py to see how to implement your own command
         # command_sequence.append_command(LinkCountingCommand())
         # command_sequence.append_command(CookieAnalyzerCommand())

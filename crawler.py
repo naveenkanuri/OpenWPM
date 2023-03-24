@@ -10,7 +10,7 @@ from threading import Lock
 from types import FrameType
 from typing import Any, Callable, List, Literal, Optional
 
-# import sentry_sdk
+import sentry_sdk
 
 from openwpm import mp_logger
 from openwpm.command_sequence import CommandSequence
@@ -32,9 +32,9 @@ TIMEOUT = int(os.getenv("TIMEOUT", "60"))
 
 # Storage Provider Params
 CRAWL_DIRECTORY = os.getenv("CRAWL_DIRECTORY", "crawl-data-local")
-GCS_BUCKET = os.getenv("GCS_BUCKET", "openwpm_bucket")
+GCS_BUCKET = os.getenv("GCS_BUCKET", "openwpm-bucket")
 GCP_PROJECT = os.getenv("GCP_PROJECT", "level-gizmo-376804")
-AUTH_TOKEN = os.getenv("GCP_AUTH_TOKEN", "./level-gizmo-376804-87d4e9c8fb8d.json")
+AUTH_TOKEN = os.getenv("GCP_AUTH_TOKEN", "/etc/secrets/level-gizmo-376804-9ec0c24c2d93.json")
 BROWSE_OR_GET = os.getenv("BROWSE_OR_GET", "BROWSE")
 NUM_LINKS = int(os.getenv("NUM_LINKS", "0"))
 
@@ -43,7 +43,7 @@ print('REDIS_HOST = ' + REDIS_HOST)
 print('GCS_BUCKET = ' + GCS_BUCKET + '\nGCP_PROJECT = ' + GCP_PROJECT + '\nAUTH_TOKEN = ' + AUTH_TOKEN + '\n')
 
 # Browser Params
-DISPLAY_MODE = os.getenv("DISPLAY_MODE", "native")
+DISPLAY_MODE = os.getenv("DISPLAY_MODE", "headless")
 assert DISPLAY_MODE in ["headless", "xvfb", "native"]
 DISPLAY_MODE = typing.cast(Literal["headless", "xvfb", "native"], DISPLAY_MODE)
 HTTP_INSTRUMENT = os.getenv("HTTP_INSTRUMENT", "1") == "1"
@@ -97,6 +97,7 @@ for i in range(NUM_BROWSERS):
     if PREFS:
         browser_params[i].prefs = json.loads(PREFS)
 
+    print(f'display mode = {DISPLAY_MODE}, http_instrument = {HTTP_INSTRUMENT}, cookie_instrument = {COOKIE_INSTRUMENT}, navigation_instrument = {NAVIGATION_INSTRUMENT}, callstack_instrument = {CALLSTACK_INSTRUMENT}, js_instrument = {JS_INSTRUMENT}, js_instrument_settings = {JS_INSTRUMENT_SETTINGS}')
 # Manager configuration
 manager_params.data_directory = Path("~/Desktop/") / CRAWL_DIRECTORY
 manager_params.log_path = Path("~/Desktop/") / CRAWL_DIRECTORY / "openwpm.log"
@@ -124,36 +125,36 @@ manager = TaskManager(
 )
 
 # At this point, Sentry should be initiated
-# if SENTRY_DSN:
-#     # Add crawler.py-specific context
-#     with sentry_sdk.configure_scope() as scope:
-#         # tags generate breakdown charts and search filters
-#         scope.set_tag("CRAWL_DIRECTORY", CRAWL_DIRECTORY)
-#         scope.set_tag("GCS_BUCKET", GCS_BUCKET)
-#         scope.set_tag("DISPLAY_MODE", DISPLAY_MODE)
-#         scope.set_tag("HTTP_INSTRUMENT", HTTP_INSTRUMENT)
-#         scope.set_tag("COOKIE_INSTRUMENT", COOKIE_INSTRUMENT)
-#         scope.set_tag("NAVIGATION_INSTRUMENT", NAVIGATION_INSTRUMENT)
-#         scope.set_tag("JS_INSTRUMENT", JS_INSTRUMENT)
-#         scope.set_tag("JS_INSTRUMENT_SETTINGS", JS_INSTRUMENT_SETTINGS)
-#         scope.set_tag("CALLSTACK_INSTRUMENT", CALLSTACK_INSTRUMENT)
-#         scope.set_tag("SAVE_CONTENT", SAVE_CONTENT)
-#         scope.set_tag("DWELL_TIME", DWELL_TIME)
-#         scope.set_tag("TIMEOUT", TIMEOUT)
-#         scope.set_tag("MAX_JOB_RETRIES", MAX_JOB_RETRIES)
-#         scope.set_tag("CRAWL_REFERENCE", "%s/%s" % (GCS_BUCKET, CRAWL_DIRECTORY))
-#         # context adds addition information that may be of interest
-#         if PREFS:
-#             scope.set_context("PREFS", json.loads(PREFS))
-#         scope.set_context(
-#             "crawl_config",
-#             {
-#                 "REDIS_QUEUE_NAME": REDIS_QUEUE_NAME,
-#             },
-#         )
-#     # Send a sentry error message (temporarily - to easily be able
-#     # to compare error frequencies to crawl worker instance count)
-#     sentry_sdk.capture_message("Crawl worker started")
+if SENTRY_DSN:
+    # Add crawler.py-specific context
+    with sentry_sdk.configure_scope() as scope:
+        # tags generate breakdown charts and search filters
+        scope.set_tag("CRAWL_DIRECTORY", CRAWL_DIRECTORY)
+        scope.set_tag("GCS_BUCKET", GCS_BUCKET)
+        scope.set_tag("DISPLAY_MODE", DISPLAY_MODE)
+        scope.set_tag("HTTP_INSTRUMENT", HTTP_INSTRUMENT)
+        scope.set_tag("COOKIE_INSTRUMENT", COOKIE_INSTRUMENT)
+        scope.set_tag("NAVIGATION_INSTRUMENT", NAVIGATION_INSTRUMENT)
+        scope.set_tag("JS_INSTRUMENT", JS_INSTRUMENT)
+        scope.set_tag("JS_INSTRUMENT_SETTINGS", JS_INSTRUMENT_SETTINGS)
+        scope.set_tag("CALLSTACK_INSTRUMENT", CALLSTACK_INSTRUMENT)
+        scope.set_tag("SAVE_CONTENT", SAVE_CONTENT)
+        scope.set_tag("DWELL_TIME", DWELL_TIME)
+        scope.set_tag("TIMEOUT", TIMEOUT)
+        scope.set_tag("MAX_JOB_RETRIES", MAX_JOB_RETRIES)
+        scope.set_tag("CRAWL_REFERENCE", "%s/%s" % (GCS_BUCKET, CRAWL_DIRECTORY))
+        # context adds addition information that may be of interest
+        if PREFS:
+            scope.set_context("PREFS", json.loads(PREFS))
+        scope.set_context(
+            "crawl_config",
+            {
+                "REDIS_QUEUE_NAME": REDIS_QUEUE_NAME,
+            },
+        )
+    # Send a sentry error message (temporarily - to easily be able
+    # to compare error frequencies to crawl worker instance count)
+    sentry_sdk.capture_message("Crawl worker started")
 
 # Connect to job queue
 job_queue = rediswq.RedisWQ(
@@ -247,5 +248,5 @@ else:
     manager.logger.info("Job queue finished, exiting.")
 manager.close()
 
-# if SENTRY_DSN:
-#     sentry_sdk.capture_message("Crawl worker finished")
+if SENTRY_DSN:
+    sentry_sdk.capture_message("Crawl worker finished")

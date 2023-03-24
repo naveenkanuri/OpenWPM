@@ -52,33 +52,35 @@ def bot_mitigation(webdriver):
         elapsed_time = time.time() - start_time  # get the elapsed time
         # print(f'elapsed_time = {elapsed_time}')
         if elapsed_time > 9:
-            time.sleep(10-elapsed_time)
+            time.sleep(10 - elapsed_time)
         else:
             # delay b/w mouse random moves is 0 for the first 10sec
             rand_mouse_moves(webdriver, NUM_MOUSE_MOVES, 0)
 
     print(f'switch_time = {time.time()-start_time}')
     action = ActionChains(webdriver)
-    action.context_click()    # add right click
+    action.context_click()  # add right click
     action.perform()
     while time.time() < start_time + 20:
         elapsed_time = time.time() - start_time  # get the elapsed time
         # print(f'elapsed_time = {elapsed_time}')
         if elapsed_time > 19:
-            time.sleep(20-elapsed_time)
+            time.sleep(20 - elapsed_time)
         else:
             rand_mouse_moves(webdriver, NUM_MOUSE_MOVES_AFTER_10_SEC, 0.1)
-    print(f'end_time = {time.time()-start_time}')
+    # print(f'end_time = {time.time() - start_time}')
     action = ActionChains(webdriver)
     action.context_click()
-    action.perform()      # add right click
+    action.perform()  # add right click
+    time.sleep(2)
+
 
 def rand_mouse_moves(webdriver, num_mouse_moves, delay_between_moves):
     # bot mitigation 1: move the randomly around a number of times
     window_size = webdriver.get_window_size()
     num_moves = 0
     num_fails = 0
-    while num_moves < NUM_MOUSE_MOVES + 1 and num_fails < NUM_MOUSE_MOVES:
+    while num_moves < num_mouse_moves + 1 and num_fails < num_mouse_moves:
         try:
             if num_moves == 0:  # move to the center of the screen
                 x = int(round(window_size["height"] / 2))
@@ -96,6 +98,8 @@ def rand_mouse_moves(webdriver, num_mouse_moves, delay_between_moves):
         except MoveTargetOutOfBoundsException:
             # print(f'---------bot mitigation-------- failed move to x:{x}, y:{y}')
             num_fails += 1
+            if num_moves == 0:
+                num_moves += 1
             pass
 
     # bot mitigation 2: scroll in random intervals down page
@@ -160,11 +164,11 @@ class GetCommand(BaseCommand):
         return "GetCommand({},{})".format(self.url, self.sleep)
 
     def execute(
-        self,
-        webdriver: Firefox,
-        browser_params: BrowserParams,
-        manager_params: ManagerParams,
-        extension_socket: ClientSocket,
+            self,
+            webdriver: Firefox,
+            browser_params: BrowserParams,
+            manager_params: ManagerParams,
+            extension_socket: ClientSocket,
     ) -> None:
         tab_restart_browser(webdriver)
 
@@ -205,11 +209,11 @@ class BrowseCommand(BaseCommand):
         return "BrowseCommand({},{},{})".format(self.url, self.num_links, self.sleep)
 
     def execute(
-        self,
-        webdriver,
-        browser_params,
-        manager_params,
-        extension_socket,
+            self,
+            webdriver,
+            browser_params,
+            manager_params,
+            extension_socket,
     ):
         """Calls get_website before visiting <num_links> present on the page.
 
@@ -267,11 +271,11 @@ class SaveScreenshotCommand(BaseCommand):
         return "SaveScreenshotCommand({})".format(self.suffix)
 
     def execute(
-        self,
-        webdriver,
-        browser_params,
-        manager_params,
-        extension_socket,
+            self,
+            webdriver,
+            browser_params,
+            manager_params,
+            extension_socket,
     ):
         if self.suffix != "":
             self.suffix = "-" + self.suffix
@@ -292,9 +296,9 @@ def _stitch_screenshot_parts(visit_id, browser_id, manager_params):
     images = dict()
     parts = list()
     for f in glob(
-        os.path.join(
-            manager_params.screenshot_path, "parts", "%i*-part-*.png" % visit_id
-        )
+            os.path.join(
+                manager_params.screenshot_path, "parts", "%i*-part-*.png" % visit_id
+            )
     ):
 
         # Load image from disk and parse params out of filename
@@ -354,11 +358,11 @@ class ScreenshotFullPageCommand(BaseCommand):
         return "ScreenshotFullPageCommand({})".format(self.suffix)
 
     def execute(
-        self,
-        webdriver,
-        browser_params,
-        manager_params,
-        extension_socket,
+            self,
+            webdriver,
+            browser_params,
+            manager_params,
+            extension_socket,
     ):
         self.outdir = os.path.join(manager_params.screenshot_path, "parts")
         if not os.path.isdir(self.outdir):
@@ -385,7 +389,7 @@ class ScreenshotFullPageCommand(BaseCommand):
             prev_scrollY = -1
             webdriver.save_screenshot(outname % (part, curr_scrollY))
             while (
-                curr_scrollY + inner_height
+                    curr_scrollY + inner_height
             ) < max_height and curr_scrollY != prev_scrollY:
 
                 # Scroll down to bottom of previous viewport
@@ -426,13 +430,12 @@ class DumpPageSourceCommand(BaseCommand):
         return "DumpPageSourceCommand({})".format(self.suffix)
 
     def execute(
-        self,
-        webdriver,
-        browser_params,
-        manager_params,
-        extension_socket,
+            self,
+            webdriver,
+            browser_params,
+            manager_params,
+            extension_socket,
     ):
-
         if self.suffix != "":
             self.suffix = "-" + self.suffix
 
@@ -455,11 +458,11 @@ class RecursiveDumpPageSourceCommand(BaseCommand):
         return "RecursiveDumpPageSourceCommand({})".format(self.suffix)
 
     def execute(
-        self,
-        webdriver,
-        browser_params,
-        manager_params,
-        extension_socket,
+            self,
+            webdriver,
+            browser_params,
+            manager_params,
+            extension_socket,
     ):
 
         """Dump a compressed html tree for the current page visit"""
@@ -516,13 +519,12 @@ class FinalizeCommand(BaseCommand):
         return f"FinalizeCommand({self.sleep})"
 
     def execute(
-        self,
-        webdriver,
-        browser_params,
-        manager_params,
-        extension_socket,
+            self,
+            webdriver,
+            browser_params,
+            manager_params,
+            extension_socket,
     ):
-
         """Informs the extension that a visit is done"""
         tab_restart_browser(webdriver)
         # This doesn't immediately stop data saving from the current
@@ -543,12 +545,11 @@ class InitializeCommand(BaseCommand):
         return "InitializeCommand()"
 
     def execute(
-        self,
-        webdriver,
-        browser_params,
-        manager_params,
-        extension_socket,
+            self,
+            webdriver,
+            browser_params,
+            manager_params,
+            extension_socket,
     ):
-
         msg = {"action": "Initialize", "visit_id": self.visit_id}
         extension_socket.send(msg)

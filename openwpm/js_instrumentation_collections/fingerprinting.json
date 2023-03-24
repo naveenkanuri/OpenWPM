@@ -8,6 +8,13 @@
     "RTCPeerConnection",
     "HTMLCanvasElement",
     "Storage",
+    "MouseEvent",
+    {"EventTarget": {
+        "propertiesToInstrument" : [
+            "addEventListener",
+            "dispatchEvent"
+        ]
+    }},
     "window.navigator",
     {"CanvasRenderingContext2D": {
         "excludedProperties": [

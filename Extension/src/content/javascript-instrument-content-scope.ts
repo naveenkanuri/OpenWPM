@@ -36,6 +36,11 @@ function insertScript(
   script.setAttribute("data-testing", `${testing}`);
   parent.insertBefore(script, parent.firstChild);
   parent.removeChild(script);
+  // document.addEventListener("mousemove", (event : MouseEvent) => {
+  //     // console.log("eventId = " +eventId + ", Mouse position: " + event.clientX + ", " + event.clientY);
+  //     emitMsg('logCall', "hello + eventId = " +eventId + ", Mouse position: " + event.clientX + ", " + event.clientY);
+  //   });
+  console.log('hello from content-scope.ts')
 }
 
 function emitMsg(type, msg) {
@@ -55,12 +60,21 @@ document.addEventListener(eventId, (e: CustomEvent) => {
   const msgs = e.detail;
   if (Array.isArray(msgs)) {
     msgs.forEach((msg) => {
+      // console.log('msg.type = ' +msg.type + ' msg.content = '+msg.content);
+      // console.log(JSON.stringify(msg.content));
       emitMsg(msg.type, msg.content);
     });
   } else {
+    // console.log('msg.type = ' +msgs.type + ' msg.content = '+msgs.content);
+    // console.log(JSON.stringify(msgs.content));
     emitMsg(msgs.type, msgs.content);
   }
 });
+
+// document.addEventListener("mousemove", (event : MouseEvent) => {
+//       console.log("Mouse position: " + event.clientX + ", " + event.clientY);
+//     });
+
 
 export const injectJavascriptInstrumentPageScript = (
   contentScriptConfig: openWpmContentScriptConfig,
